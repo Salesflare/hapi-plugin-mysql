@@ -32,3 +32,6 @@ server.route({
 The options are the same options you can pass onto `mysql` lib for making a conection. See https://www.npmjs.com/package/mysql for more info on the `mysql` lib itself.
 
 The connection is available through `request.db` because `request.connection` is a reserved keyword by `Hapi`
+
+## Testing
+The tests requires you to have a `test` db with `user: root` and `password: ""`. See `.travis.yml` and the test folder for more info.

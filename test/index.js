@@ -10,7 +10,7 @@ var expect = Code.expect;
 
 var dbOptions = {
 	host: 'localhost',
-	user: 'travis',
+	user: 'root',
 	password: ''
 };
 
@@ -22,38 +22,40 @@ lab.experiment('Integration', function () {
 		server.register({
 			register: require('../'),
 			options: dbOptions
-		});
-		
-		server.route({
-			method: 'GET',
-			path: '/test',
-			config: {
-				handler: function (request, reply) {
-					var sql = 'INSERT INTO test SET id = 1';
-					
-					expect(request.db).to.exist();
-					
-					request.db.query(sql, function (err, results) {
-						expect(err).to.not.exist();
-						console.log(results.insertId);
-						expect(results.resultId).to.exist();
-						
-						return reply({id: results.insertId});
-					});
-				}
-			}
-		});
-		
-		server.inject({
-			method: 'GET',
-			url: '/test'
-		}, function (response) {
-			expect(response.statusCode).to.equal(200);
-			expect(response.result).to.deep.equal({
-				id: 1
-			});
+		}, function (err) {
+			expect(err).to.not.exist();
 			
-			done();
+			server.route({
+				method: 'GET',
+				path: '/test',
+				config: {
+					handler: function (request, reply) {
+						var sql = 'INSERT INTO test SET id = 1';
+
+						expect(request.db).to.exist();
+
+						request.db.query(sql, function (err, results) {
+							expect(err).to.not.exist();
+							console.log(results.insertId);
+							expect(results.resultId).to.exist();
+
+							return reply({id: results.insertId});
+						});
+					}
+				}
+			});
+
+			server.inject({
+				method: 'GET',
+				url: '/test'
+			}, function (response) {
+				expect(response.statusCode).to.equal(200);
+				expect(response.result).to.deep.equal({
+					id: 1
+				});
+
+				done();
+			});
 		});
 	});
 });
