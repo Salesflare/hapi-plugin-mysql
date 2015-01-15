@@ -1,0 +1,14 @@
+{
+    "node": true,
+    "validthis": true,
+    "eqeqeq": true,
+    "unused": true,
+    "indent": 2,
+    "white": true,
+    "undef": true,
+    "freeze": true,
+    "latedef": true,
+    "newcap" : true,
+    "quotmark": "single",
+    "strict": true
+}
