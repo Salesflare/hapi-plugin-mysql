@@ -52,8 +52,8 @@ lab.experiment('Integration', function () {
 			expect(response.result).to.deep.equal({
 				id: 1
 			});
+			
+			done();
 		});
-		
-		done();
 	});
 });
