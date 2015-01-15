@@ -3,7 +3,7 @@ Hapi plugin for MySQL
 
 ## What
 Attaches a connection to every request. 
-Can also automaticly start a transaction.
+Can also automaticly start a transaction. With the `useTransactions` property.
 
 ## How
 ```javascript
@@ -23,10 +23,12 @@ server.route({
 	method: 'GET', 
 	path: '/', 
 	handler: function (request, reply) { 
-			request.connection.query(...);
+			request.db.query(...);
 			return reply('ok'); 
 		} 
 	});
 ```
 
 The options are the same options you can pass onto `mysql` lib for making a conection. See https://www.npmjs.com/package/mysql for more info on the `mysql` lib itself.
+
+The connection is available through `request.db` because `request.connection` is a reserved keyword by `Hapi`
