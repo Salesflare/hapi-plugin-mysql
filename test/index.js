@@ -11,7 +11,8 @@ var expect = Code.expect;
 var dbOptions = {
 	host: 'localhost',
 	user: 'root',
-	password: ''
+	password: '',
+	database: 'test'
 };
 
 lab.experiment('Integration', function () {
