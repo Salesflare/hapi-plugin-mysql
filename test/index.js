@@ -32,12 +32,12 @@ lab.experiment('Integration', function () {
 					handler: function (request, reply) {
 						var sql = 'INSERT INTO test SET id = 1';
 
-						expect(request.db).to.exist();
+						expect(request.db, 'db connection').to.exist();
 
 						request.db.query(sql, function (err, results) {
-							expect(err).to.not.exist();
-							console.log(results.insertId);
-							expect(results.resultId).to.exist();
+							console.log(err);
+							expect(err, 'error').to.not.exist();
+							expect(results.insertId, 'insert Id').to.exist();
 
 							return reply({id: results.insertId});
 						});
@@ -49,8 +49,8 @@ lab.experiment('Integration', function () {
 				method: 'GET',
 				url: '/test'
 			}, function (response) {
-				expect(response.statusCode).to.equal(200);
-				expect(response.result).to.deep.equal({
+				expect(response.statusCode, 'status code').to.equal(200);
+				expect(response.result, 'result').to.deep.equal({
 					id: 1
 				});
 
