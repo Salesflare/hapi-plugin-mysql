@@ -1,6 +1,6 @@
 {
   "name": "hapi-plugin-mysql",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Hapi plugin for MySQL",
   "main": "index.js",
   "private": false,
