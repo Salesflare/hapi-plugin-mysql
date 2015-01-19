@@ -33,9 +33,9 @@ lab.experiment('Integration', function () {
 					handler: function (request, reply) {
 						var sql = 'INSERT INTO test SET id = 1';
 
-						expect(request.db, 'db connection').to.exist();
+						expect(request.app.db, 'db connection').to.exist();
 
-						request.db.query(sql, function (err, results) {
+						request.app.db.query(sql, function (err, results) {
 							expect(err, 'error').to.not.exist();
 							expect(results.insertId, 'insert Id').to.exist();
 
