@@ -1,4 +1,4 @@
-# hapi-plugin-mysql
+# hapi-plugin-mysql [![Build Status](https://travis-ci.org/Salesflare/hapi-plugin-mysql.svg?branch=master)](https://travis-ci.org/Salesflare/hapi-plugin-mysql)
 Hapi plugin for MySQL
 
 ## What
