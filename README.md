@@ -33,5 +33,7 @@ The options are the same options you can pass onto `mysql` lib for making a cone
 
 The connection is available through `request.app.db` because `request.connection` is a reserved keyword by `Hapi`
 
+!! The releasing if the connection is handled on the `tail` event of the server. If you have handlers that reply early, with `reply.file()` for example, be sure to register a `tail` event and use that as callback.
+
 ## Testing
 The tests requires you to have a `test` db with `user: root` and `password: ""`. See `.travis.yml` and the test folder for more info.
