@@ -19,15 +19,15 @@ lab.experiment('Integration', function () {
 	it ('Makes a db connection that works', function (done) {
 		var server = new Hapi.Server();
 		server.connection();
-		
+
 		server.register({
 			register: require('../'),
 			options: dbOptions
 		}, function (err) {
 			expect(err).to.not.exist();
-			
-			server.route({
-				method: 'GET',
+
+			server.route([{
+				method: 'POST',
 				path: '/test',
 				config: {
 					handler: function (request, reply) {
@@ -43,18 +43,40 @@ lab.experiment('Integration', function () {
 						});
 					}
 				}
-			});
+			},{
+				method: 'GET',
+				path: '/test',
+				config: {
+					handler: function (request, reply) {
+						var sql = 'SELECT * FROM test';
+
+						expect(request.app.db, 'db connection').to.exist();
+
+						request.app.db.query(sql, function (err, results) {
+							expect(err, 'error').to.not.exist();
+
+							return reply({id: results.insertId});
+						});
+					}
+				}
+			}]);
 
 			server.inject({
-				method: 'GET',
+				method: 'POST',
 				url: '/test'
 			}, function (response) {
-				expect(response.statusCode, 'status code').to.equal(200);
-				expect(response.result, 'result').to.deep.equal({
-					id: 1
-				});
+				expect(response.statusCode, 'post status code').to.equal(200);
+				expect(response.result, 'post result').to.deep.equal({id: 1});
 
-				done();
+				server.inject({
+					method: 'GET',
+					url: '/test'
+				}, function (response) {
+					expect(response.statusCode, 'get status code').to.equal(200);
+					expect(response.result, 'get result').to.deep.equal({id: 1});
+
+					done();
+				});
 			});
 		});
 	});
