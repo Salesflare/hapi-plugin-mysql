@@ -23,7 +23,7 @@ server.route({
 	method: 'GET', 
 	path: '/', 
 	handler: function (request, reply) { 
-			request.db.query(...);
+			request.app.db.query(...);
 			return reply('ok'); 
 		} 
 	});
