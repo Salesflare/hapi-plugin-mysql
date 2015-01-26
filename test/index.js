@@ -73,7 +73,7 @@ lab.experiment('Integration', function () {
 					url: '/test'
 				}, function (response) {
 					expect(response.statusCode, 'get status code').to.equal(200);
-					expect(response.result, 'get result').to.deep.equal([{id: 1}]);
+					expect(response.result, 'get result').to.equal([{id: 1}]);
 
 					done();
 				});

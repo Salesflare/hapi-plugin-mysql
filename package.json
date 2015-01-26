@@ -5,7 +5,7 @@
   "main": "index.js",
   "private": false,
   "scripts": {
-    "test": "make test"
+    "test": "make test-cov"
   },
   "repository": {
     "type": "git",
