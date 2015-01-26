@@ -55,7 +55,7 @@ lab.experiment('Integration', function () {
 						request.app.db.query(sql, function (err, results) {
 							expect(err, 'error').to.not.exist();
 
-							return reply({id: results.insertId});
+							return reply(results);
 						});
 					}
 				}
