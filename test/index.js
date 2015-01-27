@@ -16,7 +16,7 @@ var dbOptions = {
 };
 
 lab.experiment('Integration', function () {
-	it ('Makes a db connection that works', function (done) {
+	it('Makes a db connection that works', function (done) {
 		var server = new Hapi.Server();
 		server.connection();
 
@@ -80,7 +80,7 @@ lab.experiment('Integration', function () {
 			});
 		});
 	});
-	it ('Makes a db connection using transactions that works', function (done) {
+	it('Makes a db connection using transactions that works', function (done) {
 		dbOptions.useTransactions = true;
 
 		var server = new Hapi.Server();
