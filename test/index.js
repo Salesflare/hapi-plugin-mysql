@@ -3,6 +3,7 @@
 var Lab = require('lab');
 var Code = require('code');
 var Hapi = require('hapi');
+var Hoek = require('hoek');
 
 var lab = exports.lab = Lab.script();
 var it = lab.it;
@@ -18,12 +19,14 @@ var dbOptions = {
 lab.experiment('Integration', function () {
 
 	it('Makes a db connection that works', function (done) {
+		var options = Hoek.clone(dbOptions);
+
 		var server = new Hapi.Server();
 		server.connection();
 
 		server.register({
 			register: require('../'),
-			options: dbOptions
+			options: options
 		}, function (err) {
 			expect(err).to.not.exist();
 
@@ -83,14 +86,15 @@ lab.experiment('Integration', function () {
 	});
 
 	it('Makes a db connection using transactions that works', function (done) {
-		dbOptions.useTransactions = true;
+		var options = Hoek.clone(dbOptions);
+		options.useTransactions = true;
 
 		var server = new Hapi.Server();
 		server.connection();
 
 		server.register({
 			register: require('../'),
-			options: dbOptions
+			options: options
 		}, function (err) {
 			expect(err).to.not.exist();
 
@@ -150,12 +154,14 @@ lab.experiment('Integration', function () {
 	});
 
 	it('Quite fail when connection is deleted', function (done) {
+		var options = Hoek.clone(dbOptions);
+
 		var server = new Hapi.Server();
 		server.connection();
 
 		server.register({
 			register: require('../'),
-			options: dbOptions
+			options: options
 		}, function (err) {
 			expect(err).to.not.exist();
 
@@ -178,6 +184,28 @@ lab.experiment('Integration', function () {
 				expect(response.result, 'post result').to.equal('ok');
 
 				done();
+			});
+		});
+	});
+
+	it('Pool is set to null on Server.stop()', function (done) {
+		var options = Hoek.clone(dbOptions);
+
+		var server = new Hapi.Server();
+		server.connection();
+
+		server.register({
+			register: require('../'),
+			options: options
+		}, function (err) {
+			expect(err).to.not.exist();
+
+			server.start(function(err) {
+				expect(err).to.not.exist();
+
+				server.stop(function() {
+					setImmediate(done);
+				});
 			});
 		});
 	});
