@@ -16,6 +16,7 @@ var dbOptions = {
 };
 
 lab.experiment('Integration', function () {
+
 	it('Makes a db connection that works', function (done) {
 		var server = new Hapi.Server();
 		server.connection();
@@ -80,6 +81,7 @@ lab.experiment('Integration', function () {
 			});
 		});
 	});
+
 	it('Makes a db connection using transactions that works', function (done) {
 		dbOptions.useTransactions = true;
 
@@ -143,6 +145,39 @@ lab.experiment('Integration', function () {
 
 					done();
 				});
+			});
+		});
+	});
+
+	it('Quite fail when connection is deleted', function (done) {
+		var server = new Hapi.Server();
+		server.connection();
+
+		server.register({
+			register: require('../'),
+			options: dbOptions
+		}, function (err) {
+			expect(err).to.not.exist();
+
+			server.route([{
+				method: 'GET',
+				path: '/test',
+				config: {
+					handler: function (request, reply) {
+						request.app.db = undefined;
+						return reply('ok');
+					}
+				}
+			}]);
+
+			server.inject({
+				method: 'GET',
+				url: '/test'
+			}, function (response) {
+				expect(response.statusCode, 'post status code').to.equal(200);
+				expect(response.result, 'post result').to.equal('ok');
+
+				done();
 			});
 		});
 	});
