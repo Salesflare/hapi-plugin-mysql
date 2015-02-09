@@ -16,6 +16,7 @@ server.register({
 	}
 }, function (err) {
 	if (err) console.log(err);
+	...
 });
 
 server.route({ 
