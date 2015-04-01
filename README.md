@@ -41,4 +41,9 @@ The keyword `db` is used because `connection` is used by `Hapi` and might cause 
 - Transactions are no longer a part of this plugin and should be handled (with care) in your code
 
 ## Testing
-The tests requires you to have a `test` db with a table  `test` and `{user: root password: ""}`. See `.travis.yml` and the tests for more info.
+* 100% code coverage!
+* The tests requires you to have a `test` db with a table  `test` and `{user: root password: ""}`. 
+* See `.travis.yml` and the tests for more info.
+
+## Changelog 
+See the [releases](https://github.com/Salesflare/hapi-plugin-mysql/releases) page
