@@ -3,9 +3,11 @@
 
 
 ## What
-Attaches a MySQL connection from a pool to every request. 
+Attaches a MySQL connection from a pool to every request.
 
 ## How
+Via `request.app.db`. You can also manualy get a connection from the server via `server.getDb(function (err, connection) {})`.
+
 ```javascript
 server.register({
 	register: require('hapi-plugin-mysql');
@@ -31,14 +33,12 @@ server.route({
 
 The options are the same options you can pass onto the `mysql` lib for making a connection. See https://www.npmjs.com/package/mysql for more info on the `mysql` lib itself.
 
-The connection is available through `request.app.db` because `request.connection` is a reserved keyword by `Hapi`.
+The keyword `db` is used because `connection` is used by `Hapi` and might cause confusion/collison.
 
-!!!!
+## Catches
 
 - The releasing of the connection is handled on the `tail` event of the server. If you have handlers that reply early, with `reply.file()` for example, be sure to register a `tail` event and use that as callback.
-- Beware when setting `useTransactions`. This will start a transaction on every request and if not managed right may lead to table/dead/row locks. It is better to not enable it and on the routes you want transactions on do the handling yourself.
-
-!!!!
+- Transactions are no longer a part of this plugin and should be handled (with care) in your code
 
 ## Testing
 The tests requires you to have a `test` db with a table  `test` and `{user: root password: ""}`. See `.travis.yml` and the tests for more info.
