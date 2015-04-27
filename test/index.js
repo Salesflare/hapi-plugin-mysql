@@ -146,11 +146,11 @@ lab.experiment('Hapi MySQL', function () {
 
                 expect(err).to.not.exist();
 
-                server.start(function(err) {
+                server.start(function (err) {
 
                     expect(err).to.not.exist();
 
-                    server.stop(function() {
+                    server.stop(function () {
 
                         setImmediate(done);
                     });
