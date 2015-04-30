@@ -5,7 +5,8 @@
   "main": "index.js",
   "private": false,
   "scripts": {
-    "test": "make test-cov"
+    "test": "lab -a code -vL -t 100 --lint-errors-threshold 0 --lint-warnings-threshold 0",
+    "test-cov-html": "lab -a code -vL -t 80 -r html -o coverage.html --lint-errors-threshold 0 --lint-warnings-threshold 0"
   },
   "repository": {
     "type": "git",
