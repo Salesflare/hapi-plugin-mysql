@@ -4,23 +4,56 @@ var Hapi = require('hapi');
 var Hoek = require('hoek');
 
 var lab = exports.lab = Lab.script();
+var describe = lab.experiment;
 var it = lab.it;
 var expect = Code.expect;
 
-var dbOptions = {
+
+var internals = {};
+internals.dbOptions = {
     host: 'localhost',
     user: 'root',
     password: '',
     database: 'test'
 };
 
-lab.experiment('Hapi MySQL', function () {
+internals.insertHandler = function (request, reply) {
 
-    lab.experiment('Basics', function () {
+    var sql = 'INSERT INTO test SET id = null';
+
+    expect(request.app.db, 'db connection').to.exist();
+
+    request.app.db.query(sql, function (err, results) {
+
+        expect(err, 'error').to.not.exist();
+        expect(results.insertId, 'insert Id').to.exist();
+
+        return reply(results.affectedRows);
+    });
+};
+
+internals.selectHandler = function (request, reply) {
+
+    var sql = 'SELECT * FROM test';
+
+    expect(request.app.db, 'db connection').to.exist();
+
+    request.app.db.query(sql, function (err, results) {
+
+        expect(err, 'error').to.not.exist();
+
+        return reply(results);
+    });
+};
+
+
+describe('Hapi MySQL', function () {
+
+    describe('Basics', function () {
 
         it('Makes a db connection that works', function (done) {
 
-            var options = Hoek.clone(dbOptions);
+            var options = Hoek.clone(internals.dbOptions);
 
             var server = new Hapi.Server();
             server.connection();
@@ -36,38 +69,13 @@ lab.experiment('Hapi MySQL', function () {
                     method: 'POST',
                     path: '/test',
                     config: {
-                        handler: function (request, reply) {
-
-                            var sql = 'INSERT INTO test SET id = 1';
-
-                            expect(request.app.db, 'db connection').to.exist();
-
-                            request.app.db.query(sql, function (err, results) {
-
-                                expect(err, 'error').to.not.exist();
-                                expect(results.insertId, 'insert Id').to.exist();
-
-                                return reply(results.affectedRows);
-                            });
-                        }
+                        handler: internals.insertHandler
                     }
                 }, {
                     method: 'GET',
                     path: '/test',
                     config: {
-                        handler: function (request, reply) {
-
-                            var sql = 'SELECT * FROM test';
-
-                            expect(request.app.db, 'db connection').to.exist();
-
-                            request.app.db.query(sql, function (err, results) {
-
-                                expect(err, 'error').to.not.exist();
-
-                                return reply(results);
-                            });
-                        }
+                        handler: internals.selectHandler
                     }
                 }]);
 
@@ -95,7 +103,7 @@ lab.experiment('Hapi MySQL', function () {
 
         it('Quite fail when connection is deleted', function (done) {
 
-            var options = Hoek.clone(dbOptions);
+            var options = Hoek.clone(internals.dbOptions);
 
             var server = new Hapi.Server();
             server.connection();
@@ -134,7 +142,7 @@ lab.experiment('Hapi MySQL', function () {
 
         it('Pool is set to null on Server.stop()', function (done) {
 
-            var options = Hoek.clone(dbOptions);
+            var options = Hoek.clone(internals.dbOptions);
 
             var server = new Hapi.Server();
             server.connection();
@@ -159,11 +167,11 @@ lab.experiment('Hapi MySQL', function () {
         });
     });
 
-    lab.experiment('Extras', function () {
+    describe('Extras', function () {
 
         it('Exposes getDb on the server', function (done) {
 
-            var options = Hoek.clone(dbOptions);
+            var options = Hoek.clone(internals.dbOptions);
 
             var server = new Hapi.Server();
             server.connection();

@@ -2,11 +2,11 @@
   "name": "hapi-plugin-mysql",
   "version": "2.0.3",
   "description": "Hapi plugin for MySQL",
-  "main": "index.js",
+  "main": "lib/index.js",
   "private": false,
   "scripts": {
-    "test": "lab -a code -vL -t 100 --lint-errors-threshold 0 --lint-warnings-threshold 0",
-    "test-cov-html": "lab -a code -vL -t 80 -r html -o coverage.html --lint-errors-threshold 0 --lint-warnings-threshold 0"
+    "test": "lab -a code -vL -t 100",
+    "test-cov-html": "lab -a code -vL -t 100 -r html"
   },
   "repository": {
     "type": "git",
