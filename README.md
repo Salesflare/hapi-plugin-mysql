@@ -42,7 +42,7 @@ The keyword `db` is used because `connection` is used by `Hapi` and might cause 
 
 ## Testing
 * 100% code coverage!
-* The tests requires you to have a `test` db with a table  `test` and `{user: root password: ""}`. 
+* The tests requires you to have a `test` db with a table  `test` and `{user: root, password: ""}`. 
 * See `.travis.yml` and the tests for more info.
 
 ## Changelog 

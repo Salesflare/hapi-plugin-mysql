@@ -9,12 +9,13 @@ var it = lab.it;
 var expect = Code.expect;
 
 
-var internals = {};
-internals.dbOptions = {
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'test'
+var internals = {
+    dbOptions: {
+        host: 'localhost',
+        user: 'root',
+        password: '',
+        database: 'test'
+    }
 };
 
 internals.insertHandler = function (request, reply) {
@@ -90,10 +91,10 @@ describe('Hapi MySQL', function () {
                     server.inject({
                         method: 'GET',
                         url: '/test'
-                    }, function (response) {
+                    }, function (getResponse) {
 
-                        expect(response.statusCode, 'get status code').to.equal(200);
-                        expect(response.result.length, 'get result').to.be.above(0);
+                        expect(getResponse.statusCode, 'get status code').to.equal(200);
+                        expect(getResponse.result.length, 'get result').to.be.above(0);
 
                         server.stop(done);
                     });
