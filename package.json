@@ -31,7 +31,7 @@
     "hapi": ">=8.x.x"
   },
   "engines": {
-    "node": ">=0.10.35"
+    "node": ">=0.10.40"
   },
   "devDependencies": {
     "code": "1.5.0",
