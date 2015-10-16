@@ -28,7 +28,7 @@
     "mysql": "2.9.0"
   },
   "peerDependencies": {
-    "hapi": ">=8.x.x"
+    "hapi": ">=11.0.0"
   },
   "engines": {
     "node": ">=0.10.40"
