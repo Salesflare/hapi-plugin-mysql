@@ -1,15 +1,17 @@
-var Lab = require('lab');
-var Code = require('code');
-var Hapi = require('hapi');
-var Hoek = require('hoek');
+'use strict';
 
-var lab = exports.lab = Lab.script();
-var describe = lab.experiment;
-var it = lab.it;
-var expect = Code.expect;
+const Lab = require('lab');
+const Code = require('code');
+const Hapi = require('hapi');
+const Hoek = require('hoek');
+
+const lab = exports.lab = Lab.script();
+const describe = lab.experiment;
+const it = lab.it;
+const expect = Code.expect;
 
 
-var internals = {
+const internals = {
     dbOptions: {
         host: 'localhost',
         user: 'root',
@@ -20,11 +22,11 @@ var internals = {
 
 internals.insertHandler = function (request, reply) {
 
-    var sql = 'INSERT INTO test SET id = null';
+    const sql = 'INSERT INTO test SET id = null';
 
     expect(request.app.db, 'db connection').to.exist();
 
-    request.app.db.query(sql, function (err, results) {
+    request.app.db.query(sql, (err, results) => {
 
         expect(err, 'error').to.not.exist();
         expect(results.insertId, 'insert Id').to.exist();
@@ -35,11 +37,11 @@ internals.insertHandler = function (request, reply) {
 
 internals.selectHandler = function (request, reply) {
 
-    var sql = 'SELECT * FROM test';
+    const sql = 'SELECT * FROM test';
 
     expect(request.app.db, 'db connection').to.exist();
 
-    request.app.db.query(sql, function (err, results) {
+    request.app.db.query(sql, (err, results) => {
 
         expect(err, 'error').to.not.exist();
 
@@ -48,21 +50,21 @@ internals.selectHandler = function (request, reply) {
 };
 
 
-describe('Hapi MySQL', function () {
+describe('Hapi MySQL', () => {
 
-    describe('Basics', function () {
+    describe('Basics', () => {
 
-        it('Makes a db connection that works', function (done) {
+        it('Makes a db connection that works', (done) => {
 
-            var options = Hoek.clone(internals.dbOptions);
+            const options = Hoek.clone(internals.dbOptions);
 
-            var server = new Hapi.Server();
+            const server = new Hapi.Server();
             server.connection();
 
             server.register({
                 register: require('../'),
                 options: options
-            }, function (err) {
+            }, (err) => {
 
                 expect(err).to.not.exist();
 
@@ -83,7 +85,7 @@ describe('Hapi MySQL', function () {
                 server.inject({
                     method: 'POST',
                     url: '/test'
-                }, function (response) {
+                }, (response) => {
 
                     expect(response.statusCode, 'post status code').to.equal(200);
                     expect(response.result, 'post result').to.be.above(0);
@@ -91,7 +93,7 @@ describe('Hapi MySQL', function () {
                     server.inject({
                         method: 'GET',
                         url: '/test'
-                    }, function (getResponse) {
+                    }, (getResponse) => {
 
                         expect(getResponse.statusCode, 'get status code').to.equal(200);
                         expect(getResponse.result.length, 'get result').to.be.above(0);
@@ -102,17 +104,17 @@ describe('Hapi MySQL', function () {
             });
         });
 
-        it('Quite fail when connection is deleted', function (done) {
+        it('Quite fail when connection is deleted', (done) => {
 
-            var options = Hoek.clone(internals.dbOptions);
+            const options = Hoek.clone(internals.dbOptions);
 
-            var server = new Hapi.Server();
+            const server = new Hapi.Server();
             server.connection();
 
             server.register({
                 register: require('../'),
                 options: options
-            }, function (err) {
+            }, (err) => {
 
                 expect(err).to.not.exist();
 
@@ -120,7 +122,7 @@ describe('Hapi MySQL', function () {
                     method: 'GET',
                     path: '/test',
                     config: {
-                        handler: function (request, reply) {
+                        handler: (request, reply) => {
 
                             request.app.db = undefined;
                             return reply('ok');
@@ -131,7 +133,7 @@ describe('Hapi MySQL', function () {
                 server.inject({
                     method: 'GET',
                     url: '/test'
-                }, function (response) {
+                }, (response) => {
 
                     expect(response.statusCode, 'post status code').to.equal(200);
                     expect(response.result, 'post result').to.equal('ok');
@@ -141,25 +143,25 @@ describe('Hapi MySQL', function () {
             });
         });
 
-        it('Pool is set to null on Server.stop()', function (done) {
+        it('Pool is set to null on Server.stop()', (done) => {
 
-            var options = Hoek.clone(internals.dbOptions);
+            const options = Hoek.clone(internals.dbOptions);
 
-            var server = new Hapi.Server();
+            const server = new Hapi.Server();
             server.connection();
 
             server.register({
                 register: require('../'),
                 options: options
-            }, function (err) {
+            }, (err) => {
 
                 expect(err).to.not.exist();
 
-                server.start(function (err) {
+                server.start((err) => {
 
                     expect(err).to.not.exist();
 
-                    server.stop(function () {
+                    server.stop(() => {
 
                         setImmediate(done);
                     });
@@ -168,29 +170,58 @@ describe('Hapi MySQL', function () {
         });
     });
 
-    describe('Extras', function () {
+    describe('Extras', () => {
 
-        it('Exposes getDb on the server', function (done) {
+        it('Exposes getDb on the server', (done) => {
 
-            var options = Hoek.clone(internals.dbOptions);
+            const options = Hoek.clone(internals.dbOptions);
 
-            var server = new Hapi.Server();
+            const server = new Hapi.Server();
             server.connection();
 
             server.register({
                 register: require('../'),
                 options: options
-            }, function (err) {
+            }, (err) => {
 
                 expect(err).to.not.exist();
                 expect(server.getDb, 'getDb').to.exist();
 
-                server.getDb(function (err, db) {
+                server.getDb((err, db) => {
 
                     expect(err).to.not.exist();
                     expect(db, 'db').to.exist();
 
                     server.stop(done);
+                });
+            });
+        });
+
+        it('Only registers once', (done) => {
+
+            const options = Hoek.clone(internals.dbOptions);
+
+            const server = new Hapi.Server();
+            server.connection();
+
+            server.register([
+                {
+                    register: require('../'),
+                    options: options
+                }, {
+                    register: require('../'),
+                    options: options
+                }
+            ], (err) => {
+
+                expect(err).to.not.exist();
+
+                server.start((err) => {
+
+                    expect(err).to.not.exist();
+                    expect(server.registrations['hapi-plugin-mysql']).to.be.an.object();
+
+                    done();
                 });
             });
         });
