@@ -25,7 +25,7 @@
   "homepage": "https://github.com/Salesflare/hapi-plugin-mysql",
   "dependencies": {
     "hoek": "3.x.x",
-    "mysql": "2.9.x"
+    "mysql": "2.10.x"
   },
   "peerDependencies": {
     "hapi": ">=11.x.x"
@@ -36,6 +36,6 @@
   "devDependencies": {
     "code": "2.x.x",
     "hapi": "11.x.x",
-    "lab": "7.x.x"
+    "lab": "8.x.x"
   }
 }
