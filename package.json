@@ -28,14 +28,14 @@
     "mysql": "2.10.x"
   },
   "peerDependencies": {
-    "hapi": ">=11.x.x"
+    "hapi": ">=13.x.x"
   },
   "engines": {
     "node": ">=4.0.0"
   },
   "devDependencies": {
     "code": "2.x.x",
-    "hapi": "11.x.x",
-    "lab": "8.x.x"
+    "hapi": "13.x.x",
+    "lab": "10.x.x"
   }
 }
