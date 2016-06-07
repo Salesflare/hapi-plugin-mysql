@@ -34,7 +34,7 @@
     "node": ">=4.0.0"
   },
   "devDependencies": {
-    "code": "2.x.x",
+    "code": "3.0.1",
     "hapi": "13.x.x",
     "lab": "10.x.x"
   }
