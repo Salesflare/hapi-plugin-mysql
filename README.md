@@ -10,7 +10,7 @@ Via `request.app.db`. You can also manualy get a connection from the server via 
 
 ```javascript
 server.register({
-	register: require('hapi-plugin-mysql');
+	register: require('hapi-plugin-mysql'),
 	options: {
 		host: "localhost",
 		user: "root",
