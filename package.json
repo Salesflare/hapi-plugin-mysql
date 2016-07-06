@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "code": "2.x.x",
-    "hapi": "13.x.x",
+    "hapi": "13.5.0",
     "lab": "10.x.x"
   }
 }
