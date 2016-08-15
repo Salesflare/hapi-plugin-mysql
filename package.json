@@ -36,6 +36,6 @@
   "devDependencies": {
     "code": "3.x.x",
     "hapi": "13.x.x",
-    "lab": "10.x.x"
+    "lab": "11.0.0"
   }
 }
