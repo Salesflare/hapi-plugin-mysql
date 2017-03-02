@@ -143,7 +143,7 @@ describe('Hapi MySQL', () => {
             });
         });
 
-        it('Pool is set to null on Server.stop()', (done) => {
+        it('Pool is ended on Server.stop()', (done) => {
 
             const options = Hoek.clone(internals.dbOptions);
 
@@ -217,6 +217,34 @@ describe('Hapi MySQL', () => {
 
                     expect(err).to.not.exist();
                     expect(server.registrations['hapi-plugin-mysql']).to.be.an.object();
+
+                    return server.stop(done);
+                });
+            });
+        });
+
+        it('Works on connectionless servers', (done) => {
+
+            const options = Hoek.clone(internals.dbOptions);
+
+            const server = new Hapi.Server();
+
+            return server.register([
+                {
+                    register: require('../'),
+                    options
+                }, {
+                    register: require('../'),
+                    options
+                }
+            ], (err) => {
+
+                expect(err).to.not.exist();
+
+                return server.initialize((err) => {
+
+                    expect(err).to.not.exist();
+                    expect(server._registrations['hapi-plugin-mysql']).to.be.an.object();
 
                     return server.stop(done);
                 });
