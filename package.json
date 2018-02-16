@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/Salesflare/hapi-plugin-mysql",
   "dependencies": {
-    "hoek": "^4.2.1",
+    "hoek": "^5.0.3",
     "mysql": "~2.15.0"
   },
   "peerDependencies": {
