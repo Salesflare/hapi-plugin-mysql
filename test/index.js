@@ -167,6 +167,105 @@ describe('Hapi MySQL', () => {
         });
     });
 
+    describe('Init', () => {
+    
+        it('Registers using `init`', (done) => {
+       
+            const options = Hoek.clone(internals.dbOptions);
+
+            const MySQLPlugin = require('../');
+            return MySQLPlugin.init(options, (err) => {
+            
+                expect(err).to.not.exist();
+
+                return MySQLPlugin.stop(done);
+            });
+        });
+
+        it('Registers with calling `init` and then using it as a plugin with no options', (done) => {
+       
+            const options = Hoek.clone(internals.dbOptions);
+
+            const MySQLPlugin = require('../');
+            return MySQLPlugin.init(options, (err) => {
+            
+                expect(err).to.not.exist();
+
+                const server = new Hapi.Server();
+                server.connection();
+    
+                return server.register({
+                    register: MySQLPlugin
+                }, (err) => {
+    
+                    expect(err).to.not.exist();
+    
+                    return server.stop(done);
+                });
+            });
+        });
+
+        it('Errors on registering twice', (done) => {
+       
+            const options = Hoek.clone(internals.dbOptions);
+
+            const MySQLPlugin = require('../');
+            return MySQLPlugin.init(options, (err) => {
+            
+                expect(err).to.not.exist();
+
+                return MySQLPlugin.init(options, (err) => {
+
+                    expect(err).to.be.an.error('There is already a pool configured');
+
+                    return MySQLPlugin.stop(done);
+                });
+            });
+        });
+        
+        it('Errors on registering with no host option', (done) => {
+
+            const MySQLPlugin = require('../');
+            return MySQLPlugin.init({}, (err) => {
+            
+                expect(err).to.be.an.error('Options must include host property');
+
+                return done();
+            });
+        });
+
+        it('Errors when options are wrong', (done) => {
+
+            const options = Hoek.clone(internals.dbOptions);
+            options.host = 'test';
+
+            const MySQLPlugin = require('../');
+            return MySQLPlugin.init(options, (err) => {
+            
+                expect(err).to.be.an.error();
+
+                return MySQLPlugin.stop(done);
+            });
+        });
+
+        // This test is mostly to hit the fallback part when no callback is provided to `stop`
+        // If you know how to let `pool.end` actually error, please do PR ^^
+        it('Errors throws when calling stop with no callback', (done) => {
+
+            const options = Hoek.clone(internals.dbOptions);
+            options.host = 'test';
+
+            const MySQLPlugin = require('../');
+            return MySQLPlugin.init(options, (err) => {
+            
+                expect(err).to.be.an.error();
+
+                MySQLPlugin.stop();
+                return done();
+            });
+        });
+    });
+
     describe('Extras', () => {
 
         it('Exposes getDb on the server', (done) => {
@@ -192,6 +291,14 @@ describe('Hapi MySQL', () => {
                     return server.stop(done);
                 });
             });
+        });
+
+        it('Exposes `getConnection` on the module', (done) => {
+
+            const MySQLPlugin = require('../');
+            expect(MySQLPlugin.getConnection).to.be.a.function();
+
+            return done();
         });
 
         it('Only registers once', (done) => {
