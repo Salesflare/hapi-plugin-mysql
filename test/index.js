@@ -54,306 +54,455 @@ describe('Hapi MySQL', () => {
 
     describe('Basics', () => {
 
-        it('Makes a db connection that works', (done) => {
+        it('Makes a db connection that works', async () => {
 
-            const options = Hoek.clone(internals.dbOptions);
+            return new Promise((resolve, reject) => {
 
-            const server = new Hapi.Server();
-            server.connection();
+                const options = Hoek.clone(internals.dbOptions);
 
-            return server.register({
-                register: require('../'),
-                options
-            }, (err) => {
+                const server = new Hapi.Server();
+                server.connection();
 
-                expect(err).to.not.exist();
+                return server.register({
+                    register: require('../'),
+                    options
+                }, (err) => {
 
-                server.route([{
-                    method: 'POST',
-                    path: '/test',
-                    config: {
-                        handler: internals.insertHandler
-                    }
-                }, {
-                    method: 'GET',
-                    path: '/test',
-                    config: {
-                        handler: internals.selectHandler
-                    }
-                }]);
+                    expect(err).to.not.exist();
 
-                return server.inject({
-                    method: 'POST',
-                    url: '/test'
-                }, (response) => {
-
-                    expect(response.statusCode, 'post status code').to.equal(200);
-                    expect(response.result, 'post result').to.be.above(0);
+                    server.route([{
+                        method: 'POST',
+                        path: '/test',
+                        config: {
+                            handler: internals.insertHandler
+                        }
+                    }, {
+                        method: 'GET',
+                        path: '/test',
+                        config: {
+                            handler: internals.selectHandler
+                        }
+                    }]);
 
                     return server.inject({
-                        method: 'GET',
+                        method: 'POST',
                         url: '/test'
-                    }, (getResponse) => {
+                    }, (response) => {
 
-                        expect(getResponse.statusCode, 'get status code').to.equal(200);
-                        expect(getResponse.result.length, 'get result').to.be.above(0);
+                        expect(response.statusCode, 'post status code').to.equal(200);
+                        expect(response.result, 'post result').to.be.above(0);
 
-                        return server.stop(done);
+                        return server.inject({
+                            method: 'GET',
+                            url: '/test'
+                        }, (getResponse) => {
+
+                            expect(getResponse.statusCode, 'get status code').to.equal(200);
+                            expect(getResponse.result.length, 'get result').to.be.above(0);
+
+                            return server.stop((err) => {
+
+                                if (err) {
+                                    return reject(err);
+                                }
+
+                                return resolve();
+                            });
+                        });
                     });
                 });
             });
         });
 
-        it('Quite fail when connection is deleted', (done) => {
+        it('Quite fail when connection is deleted', async () => {
 
-            const options = Hoek.clone(internals.dbOptions);
+            return new Promise((resolve, reject) => {
 
-            const server = new Hapi.Server();
-            server.connection();
+                const options = Hoek.clone(internals.dbOptions);
 
-            return server.register({
-                register: require('../'),
-                options
-            }, (err) => {
+                const server = new Hapi.Server();
+                server.connection();
 
-                expect(err).to.not.exist();
+                return server.register({
+                    register: require('../'),
+                    options
+                }, (err) => {
 
-                server.route([{
-                    method: 'GET',
-                    path: '/test',
-                    config: {
-                        handler: (request, reply) => {
+                    expect(err).to.not.exist();
 
-                            request.app.db = undefined;
-                            return reply('ok');
+                    server.route([{
+                        method: 'GET',
+                        path: '/test',
+                        config: {
+                            handler: (request, reply) => {
+
+                                request.app.db = undefined;
+                                return reply('ok');
+                            }
                         }
-                    }
-                }]);
+                    }]);
 
-                return server.inject({
-                    method: 'GET',
-                    url: '/test'
-                }, (response) => {
+                    return server.inject({
+                        method: 'GET',
+                        url: '/test'
+                    }, (response) => {
 
-                    expect(response.statusCode, 'post status code').to.equal(200);
-                    expect(response.result, 'post result').to.equal('ok');
+                        expect(response.statusCode, 'post status code').to.equal(200);
+                        expect(response.result, 'post result').to.equal('ok');
 
-                    return server.stop(done);
+                        return server.stop((err) => {
+
+                            if (err) {
+                                return reject(err);
+                            }
+
+                            return resolve();
+                        });
+                    });
                 });
             });
         });
 
-        it('Pool is ended on Server.stop()', (done) => {
+        it('Pool is ended on Server.stop()', async () => {
 
-            const options = Hoek.clone(internals.dbOptions);
+            return new Promise((resolve, reject) => {
 
-            const server = new Hapi.Server();
-            server.connection();
+                const options = Hoek.clone(internals.dbOptions);
 
-            return server.register({
-                register: require('../'),
-                options
-            }, (err) => {
+                const server = new Hapi.Server();
+                server.connection();
 
-                expect(err).to.not.exist();
-
-                return server.start((err) => {
+                return server.register({
+                    register: require('../'),
+                    options
+                }, (err) => {
 
                     expect(err).to.not.exist();
 
-                    return server.stop(done);
+                    return server.start((err) => {
+
+                        expect(err).to.not.exist();
+
+                        return server.stop((err) => {
+
+                            if (err) {
+                                return reject(err);
+                            }
+
+                            return resolve();
+                        });
+                    });
                 });
             });
         });
     });
 
     describe('Init', () => {
-    
-        it('Registers using `init`', (done) => {
-       
-            const options = Hoek.clone(internals.dbOptions);
 
-            const MySQLPlugin = require('../');
-            return MySQLPlugin.init(options, (err) => {
-            
-                expect(err).to.not.exist();
+        it('Registers using `init`', async () => {
 
-                return MySQLPlugin.stop(done);
-            });
-        });
+            return new Promise((resolve, reject) => {
 
-        it('Registers with calling `init` and then using it as a plugin with no options', (done) => {
-       
-            const options = Hoek.clone(internals.dbOptions);
+                const options = Hoek.clone(internals.dbOptions);
 
-            const MySQLPlugin = require('../');
-            return MySQLPlugin.init(options, (err) => {
-            
-                expect(err).to.not.exist();
-
-                const server = new Hapi.Server();
-                server.connection();
-    
-                return server.register({
-                    register: MySQLPlugin
-                }, (err) => {
-    
-                    expect(err).to.not.exist();
-    
-                    return server.stop(done);
-                });
-            });
-        });
-
-        it('Errors on registering twice', (done) => {
-       
-            const options = Hoek.clone(internals.dbOptions);
-
-            const MySQLPlugin = require('../');
-            return MySQLPlugin.init(options, (err) => {
-            
-                expect(err).to.not.exist();
-
+                const MySQLPlugin = require('../');
                 return MySQLPlugin.init(options, (err) => {
 
-                    expect(err).to.be.an.error('There is already a pool configured');
+                    expect(err).to.not.exist();
 
-                    return MySQLPlugin.stop(done);
+                    return MySQLPlugin.stop((err) => {
+
+                        if (err) {
+                            return reject(err);
+                        }
+
+                        return resolve();
+                    });
                 });
             });
         });
-        
-        it('Errors on registering with no host option', (done) => {
 
-            const MySQLPlugin = require('../');
-            return MySQLPlugin.init({}, (err) => {
-            
-                expect(err).to.be.an.error('Options must include host property');
+        it('Stops when 1st and 2nd argument are functions', async () => {
 
-                return done();
+            return new Promise((resolve, reject) => {
+
+                const options = Hoek.clone(internals.dbOptions);
+
+                const MySQLPlugin = require('../');
+                return MySQLPlugin.init(options, (err) => {
+
+                    expect(err).to.not.exist();
+
+                    return MySQLPlugin.stop(() => {}, (err) => {
+
+                        if (err) {
+                            return reject(err);
+                        }
+
+                        return resolve();
+                    });
+                });
             });
         });
 
-        it('Errors when options are wrong', (done) => {
+        it('Registers with calling `init` and then using it as a plugin with no options', async () => {
 
-            const options = Hoek.clone(internals.dbOptions);
-            options.host = 'test';
+            return new Promise((resolve, reject) => {
 
-            const MySQLPlugin = require('../');
-            return MySQLPlugin.init(options, (err) => {
-            
-                expect(err).to.be.an.error();
+                const options = Hoek.clone(internals.dbOptions);
 
-                return MySQLPlugin.stop(done);
+                const MySQLPlugin = require('../');
+                return MySQLPlugin.init(options, (err) => {
+
+                    expect(err).to.not.exist();
+
+                    const server = new Hapi.Server();
+                    server.connection();
+
+                    return server.register({
+                        register: MySQLPlugin
+                    }, (err) => {
+
+                        expect(err).to.not.exist();
+
+                        return server.stop((err) => {
+
+                            if (err) {
+                                return reject(err);
+                            }
+
+                            return resolve();
+                        });
+                    });
+                });
+            });
+        });
+
+        it('Errors on registering twice', async () => {
+
+            return new Promise((resolve, reject) => {
+
+                const options = Hoek.clone(internals.dbOptions);
+
+                const MySQLPlugin = require('../');
+                return MySQLPlugin.init(options, (err) => {
+
+                    expect(err).to.not.exist();
+
+                    return MySQLPlugin.init(options, (err) => {
+
+                        expect(err).to.be.an.error('There is already a pool configured');
+
+                        return MySQLPlugin.stop((err) => {
+
+                            if (err) {
+                                return reject(err);
+                            }
+
+                            return resolve();
+                        });
+                    });
+                });
+            });
+        });
+
+        it('Errors on registering with no options', async () => {
+
+            return new Promise((resolve) => {
+
+                const MySQLPlugin = require('../');
+                return MySQLPlugin.init({}, (err) => {
+
+                    expect(err).to.be.an.error('No pool and no options to create one found, call `init` or `register` with options first');
+
+                    return resolve();
+                });
+            });
+        });
+
+        it('Errors on registering with no host options', async () => {
+
+            return new Promise((resolve) => {
+
+                const options = Hoek.clone(internals.dbOptions);
+                delete options.host;
+
+                const MySQLPlugin = require('../');
+                return MySQLPlugin.init(options, (err) => {
+
+                    expect(err).to.be.an.error('Options must include host property');
+
+                    return resolve();
+                });
+            });
+        });
+
+        it('Errors when options are wrong', async () => {
+
+            return new Promise((resolve, reject) => {
+
+                const options = Hoek.clone(internals.dbOptions);
+                options.host = 'test';
+
+                const MySQLPlugin = require('../');
+                return MySQLPlugin.init(options, (err) => {
+
+                    expect(err).to.be.an.error();
+
+                    return MySQLPlugin.stop((err) => {
+
+                        if (err) {
+                            return reject(err);
+                        }
+
+                        return resolve();
+                    });
+                });
             });
         });
 
         // This test is mostly to hit the fallback part when no callback is provided to `stop`
         // If you know how to let `pool.end` actually error, please do PR ^^
-        it('Errors throws when calling stop with no callback', (done) => {
+        it('Errors throws when calling stop with no callback', async () => {
 
-            const options = Hoek.clone(internals.dbOptions);
-            options.host = 'test';
+            return new Promise((resolve) => {
 
-            const MySQLPlugin = require('../');
-            return MySQLPlugin.init(options, (err) => {
-            
-                expect(err).to.be.an.error();
+                const options = Hoek.clone(internals.dbOptions);
+                options.host = 'test';
 
-                MySQLPlugin.stop();
-                return done();
+                const MySQLPlugin = require('../');
+                return MySQLPlugin.init(options, (err) => {
+
+                    expect(err).to.be.an.error();
+
+                    MySQLPlugin.stop();
+                    return resolve();
+                });
             });
         });
     });
 
     describe('Extras', () => {
 
-        it('Exposes getDb on the server', (done) => {
+        it('Exposes getDb on the server', async () => {
 
-            const options = Hoek.clone(internals.dbOptions);
+            return new Promise((resolve, reject) => {
 
-            const server = new Hapi.Server();
-            server.connection();
+                const options = Hoek.clone(internals.dbOptions);
 
-            return server.register({
-                register: require('../'),
-                options
-            }, (err) => {
+                const server = new Hapi.Server();
+                server.connection();
 
-                expect(err).to.not.exist();
-                expect(server.getDb, 'getDb').to.exist();
-
-                return server.getDb((err, db) => {
+                return server.register({
+                    register: require('../'),
+                    options
+                }, (err) => {
 
                     expect(err).to.not.exist();
-                    expect(db, 'db').to.exist();
+                    expect(server.getDb, 'getDb').to.exist();
 
-                    return server.stop(done);
+                    return server.getDb((err, db) => {
+
+                        expect(err).to.not.exist();
+                        expect(db, 'db').to.exist();
+
+                        return server.stop((err) => {
+
+                            if (err) {
+                                return reject(err);
+                            }
+
+                            return resolve();
+                        });
+                    });
                 });
             });
         });
 
-        it('Exposes `getConnection` on the module', (done) => {
+        it('Exposes `getConnection` on the module', async () => {
 
-            const MySQLPlugin = require('../');
-            expect(MySQLPlugin.getConnection).to.be.a.function();
+            return new Promise((resolve) => {
 
-            return done();
+                const MySQLPlugin = require('../');
+                expect(MySQLPlugin.getConnection).to.be.a.function();
+
+                return resolve();
+            });
         });
 
-        it('Only registers once', (done) => {
+        it('Only registers once', async () => {
 
-            const options = Hoek.clone(internals.dbOptions);
+            return new Promise((resolve, reject) => {
 
-            const server = new Hapi.Server();
-            server.connection();
+                const options = Hoek.clone(internals.dbOptions);
 
-            return server.register([
-                {
-                    register: require('../'),
-                    options
-                }, {
-                    register: require('../'),
-                    options
-                }
-            ], (err) => {
+                const server = new Hapi.Server();
+                server.connection();
 
-                expect(err).to.not.exist();
-
-                return server.start((err) => {
+                return server.register([
+                    {
+                        register: require('../'),
+                        options
+                    }, {
+                        register: require('../'),
+                        options
+                    }
+                ], (err) => {
 
                     expect(err).to.not.exist();
-                    expect(server.registrations['hapi-plugin-mysql']).to.be.an.object();
 
-                    return server.stop(done);
+                    return server.start((err) => {
+
+                        expect(err).to.not.exist();
+                        expect(server.registrations['hapi-plugin-mysql']).to.be.an.object();
+
+                        return server.stop((err) => {
+
+                            if (err) {
+                                return reject(err);
+                            }
+
+                            return resolve();
+                        });
+                    });
                 });
             });
         });
 
-        it('Works on connectionless servers', (done) => {
+        it('Works on connectionless servers', async () => {
 
-            const options = Hoek.clone(internals.dbOptions);
+            return new Promise((resolve, reject) => {
 
-            const server = new Hapi.Server();
+                const options = Hoek.clone(internals.dbOptions);
 
-            return server.register([
-                {
-                    register: require('../'),
-                    options
-                }, {
-                    register: require('../'),
-                    options
-                }
-            ], (err) => {
+                const server = new Hapi.Server();
 
-                expect(err).to.not.exist();
-
-                return server.initialize((err) => {
+                return server.register([
+                    {
+                        register: require('../'),
+                        options
+                    }, {
+                        register: require('../'),
+                        options
+                    }
+                ], (err) => {
 
                     expect(err).to.not.exist();
-                    expect(server._registrations['hapi-plugin-mysql']).to.be.an.object();
 
-                    return server.stop(done);
+                    return server.initialize((err) => {
+
+                        expect(err).to.not.exist();
+                        expect(server._registrations['hapi-plugin-mysql']).to.be.an.object();
+
+                        return server.stop((err) => {
+
+                            if (err) {
+                                return reject(err);
+                            }
+
+                            return resolve();
+                        });
+                    });
                 });
             });
         });
