@@ -33,7 +33,7 @@
     "node": ">=8.0.0"
   },
   "devDependencies": {
-    "@hapi/code": "^5.3.1",
+    "@hapi/code": "^6.0.0",
     "@hapi/lab": "^19.1.0",
     "hapi": "^16.7.0"
   }
