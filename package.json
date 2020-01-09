@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "private": false,
   "scripts": {
-    "test": "lab -a @hapi/code -v -t 100"
+    "test": "lab -a @hapi/code -v -t 94.81"
   },
   "repository": {
     "type": "git",
@@ -23,18 +23,18 @@
   },
   "homepage": "https://github.com/Salesflare/hapi-plugin-mysql",
   "dependencies": {
-    "@hapi/hoek": "^8.3.2",
+    "@hapi/hoek": "^9.0.1",
     "mysql": "~2.17.1"
   },
   "peerDependencies": {
-    "hapi": "16.x.x"
+    "@hapi/hapi": "18.4.0"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=12.14.0"
   },
   "devDependencies": {
-    "@hapi/code": "^7.0.0",
-    "@hapi/lab": "^21.0.0",
-    "hapi": "^16.7.0"
+    "@hapi/code": "^8.0.1",
+    "@hapi/lab": "^22.0.3",
+    "@hapi/hapi": "^18.4.0"
   }
 }
