@@ -2,6 +2,8 @@ language: node_js
 node_js:
   - "12"
   - "node"
+services:
+  - mysql
 before_script:
-  - mysql -e 'create database test;'
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS test;'
   - mysql -e 'USE `test`; CREATE TABLE IF NOT EXISTS `test` (`id` int(11) NOT NULL AUTO_INCREMENT,  primary key (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;'
