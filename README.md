@@ -34,10 +34,10 @@ server.route({
 
 The options are the same options you can pass onto the `mysql` lib for making a connection. See <https://www.npmjs.com/package/mysql> for more info on the `mysql` lib itself.
 
-The keyword `db` is used because `connection` was used by `<= hapi@16` and could have cause confusion/collision.
+The keyword `db` is used because `connection` was used by `<= hapi@16` and could have caused confusion/collision.
 
 If you want more manual control or you want to use the same pool outside of the hapi part of your server
-you can initialize the pool before the plugin registration by calling `require('hapi-plugin-mysql').init(options, callback)` and then call `require('hapi-plugin-mysql').getConnection` to get a connection from the pool.
+you can initialize the pool before the plugin registration by calling `await HapiPluginMysql.init(options)` and then call `require('hapi-plugin-mysql').getConnection` to get a connection from the pool.
 If you still want to register the plugin (to get all the goodies) just don't pass any options to the plugin registration
 and it will use the same pool as first created.
 To manually stop the pool call `await HapiPluginMySQL.stop()`.
