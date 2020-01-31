@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "private": false,
   "scripts": {
-    "test": "lab -a @hapi/code -v -t 94.81"
+    "test": "lab -a @hapi/code -v -t 97"
   },
   "repository": {
     "type": "git",
@@ -24,7 +24,7 @@
   "homepage": "https://github.com/Salesflare/hapi-plugin-mysql",
   "dependencies": {
     "@hapi/hoek": "^9.0.2",
-    "mysql": "~2.18.0"
+    "mysql": "^2.18.1"
   },
   "peerDependencies": {
     "@hapi/hapi": ">=19.0.0"

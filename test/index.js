@@ -103,6 +103,39 @@ describe('Hapi MySQL', () => {
             return await server.stop()
         });
 
+        it('Makes a promisified db connection that works', async () => {
+
+            const options = Hoek.clone(internals.dbOptions);
+
+            const server = Hapi.Server();
+
+            await server.register({
+                plugin: require('..'),
+                options
+            });
+
+            server.route([{
+                method: 'GET',
+                path: '/test',
+                config: {
+                    handler: (request) => {
+                    
+                        return request.app.connection.query('SELECT * FROM test');
+                    }
+                }
+            }]);
+
+            const getResponse = await server.inject({
+                method: 'GET',
+                url: '/test'
+            });
+
+            expect(getResponse.statusCode, 'get status code').to.equal(200);
+            expect(getResponse.result.length, 'get result').to.be.above(0);
+
+            return await server.stop()
+        });
+
         it('Quite fail when connection is deleted', async () => {
 
             const options = Hoek.clone(internals.dbOptions);
@@ -273,23 +306,80 @@ describe('Hapi MySQL', () => {
             
             expect(server.getDb, 'getDb').to.exist();
 
-            return new Promise((resolve, reject) => {
+            await new Promise((resolve, reject) => {
             
-                return server.getDb(async (err, db) => {
+                return server.getDb((err, db) => {
 
                     expect(err).to.not.exist();
                     expect(db, 'db').to.exist();
 
-                    await server.stop();
                     return resolve();
                 });
             });
+
+            return server.stop();
+        });
+
+        it('Exposes getConnection on the server', async () => {
+
+            const options = Hoek.clone(internals.dbOptions);
+
+            const server = Hapi.Server();
+
+            await server.register({
+                plugin: require('../'),
+                options
+            });
+            
+            expect(server.getConnection, 'getConnection').to.exist();
+            
+            const connection = await server.getConnection();
+
+            expect(connection, 'connection').to.exist();
+
+            return server.stop()
         });
 
         it('Exposes `getConnection` on the module', async () => {
 
             const MySQLPlugin = require('../');
+            await MySQLPlugin.init(internals.dbOptions);
             expect(MySQLPlugin.getConnection).to.be.a.function();
+            expect(await MySQLPlugin.getConnection()).to.exist();
+
+            return MySQLPlugin.stop();
+        });
+
+        it('Exposes `getConnection` on the module with a callback', async () => {
+
+            const MySQLPlugin = require('../');
+            await MySQLPlugin.init(internals.dbOptions);
+            expect(MySQLPlugin.getConnection).to.be.a.function();
+            
+            // By stopping we test both that getConnection takes a callback and that it returns errors properly
+            await MySQLPlugin.stop();
+            return new Promise((resolve, reject) => {
+                
+                return MySQLPlugin.getConnection((err) => {
+                    
+                    expect(err).to.exist();
+                    return resolve();
+                });
+            });
+        });
+
+        it('Promisified commit/rollback/beginTransaction', async () => {
+
+            const MySQLPlugin = require('../');
+            await MySQLPlugin.init(internals.dbOptions);
+            expect(MySQLPlugin.getConnection).to.be.a.function();
+            const connection = await MySQLPlugin.getConnection();
+            
+            await connection.beginTransaction()
+            await connection.commit()
+            await connection.rollback()
+
+            return MySQLPlugin.stop();
         });
     });
 });
