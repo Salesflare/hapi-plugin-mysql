@@ -1,7 +1,7 @@
 'use strict';
 
-const Lab = require('@hapi/lab');
-const Code = require('@hapi/code');
+const Lab = require('@hapi/lab'); // eslint-disable-line node/no-unpublished-require
+const Code = require('@hapi/code'); // eslint-disable-line node/no-unpublished-require
 const Hapi = require('@hapi/hapi');
 const Hoek = require('@hapi/hoek');
 
@@ -20,25 +20,25 @@ const internals = {
     }
 };
 
-internals.insertHandler = async (request) => {
+internals.insertHandler = (request) => {
 
     const sql = 'INSERT INTO test SET id = null';
 
     expect(request.app.db, 'db connection').to.exist();
 
     return new Promise((resolve) => {
-    
+
         return request.app.db.query(sql, (err, results) => {
 
             expect(err, 'error').to.not.exist();
             expect(results.insertId, 'insert Id').to.exist();
-    
+
             return resolve(results.affectedRows);
-        }); 
+        });
     });
 };
 
-internals.selectHandler = async (request) => {
+internals.selectHandler = (request) => {
 
     const sql = 'SELECT * FROM test';
 
@@ -100,7 +100,7 @@ describe('Hapi MySQL', () => {
             expect(getResponse.statusCode, 'get status code').to.equal(200);
             expect(getResponse.result.length, 'get result').to.be.above(0);
 
-            return await server.stop()
+            return server.stop();
         });
 
         it('Makes a promisified db connection that works', async () => {
@@ -119,7 +119,7 @@ describe('Hapi MySQL', () => {
                 path: '/test',
                 config: {
                     handler: (request) => {
-                    
+
                         return request.app.connection.query('SELECT * FROM test');
                     }
                 }
@@ -133,7 +133,7 @@ describe('Hapi MySQL', () => {
             expect(getResponse.statusCode, 'get status code').to.equal(200);
             expect(getResponse.result.length, 'get result').to.be.above(0);
 
-            return await server.stop()
+            return server.stop();
         });
 
         it('Quite fail when connection is deleted', async () => {
@@ -151,7 +151,7 @@ describe('Hapi MySQL', () => {
                 method: 'GET',
                 path: '/test',
                 config: {
-                    handler: async (request) => {
+                    handler: (request) => {
 
                         request.app.db = undefined;
                         return 'ok';
@@ -167,7 +167,7 @@ describe('Hapi MySQL', () => {
             expect(response.statusCode, 'post status code').to.equal(200);
             expect(response.result, 'post result').to.equal('ok');
 
-            return await server.stop();
+            return server.stop();
         });
 
         it('Pool is ended on Server.stop()', async () => {
@@ -181,9 +181,9 @@ describe('Hapi MySQL', () => {
                 options
             });
 
-            await server.start()
+            await server.start();
 
-            return await server.stop()
+            return server.stop();
         });
     });
 
@@ -193,17 +193,18 @@ describe('Hapi MySQL', () => {
 
             const options = Hoek.clone(internals.dbOptions);
 
-            const MySQLPlugin = require('../');
+            const MySQLPlugin = require('..');
 
             await MySQLPlugin.init(options);
-            return await MySQLPlugin.stop();
+            return MySQLPlugin.stop();
         });
 
         it('Registers with calling `init` and then using it as a plugin with no options', async () => {
 
             const options = Hoek.clone(internals.dbOptions);
 
-            const MySQLPlugin = require('../');
+            const MySQLPlugin = require('..');
+
             await MySQLPlugin.init(options);
 
             const server = Hapi.Server();
@@ -212,15 +213,16 @@ describe('Hapi MySQL', () => {
                 plugin: MySQLPlugin
             });
 
-            return await server.stop();
+            return server.stop();
         });
 
         it('Errors on registering twice', async () => {
 
             const options = Hoek.clone(internals.dbOptions);
 
-            const MySQLPlugin = require('../');
-            await MySQLPlugin.init(options)
+            const MySQLPlugin = require('..');
+
+            await MySQLPlugin.init(options);
 
             let threw = false;
 
@@ -234,22 +236,24 @@ describe('Hapi MySQL', () => {
 
             expect(threw).to.be.true();
 
-            return await MySQLPlugin.stop();
+            return MySQLPlugin.stop();
         });
 
         it('Errors on registering with no options', async () => {
 
-                const MySQLPlugin = require('../');
-                let threw = false;
+            const MySQLPlugin = require('..');
 
-                try {
-                    await MySQLPlugin.init({});
-                } catch (err) {
-                    expect(err).to.be.an.error('No pool and no options to create one found, call `init` or `register` with options first');
-                    threw = true;
-                }
-                
-                expect(threw).to.be.true();
+            let threw = false;
+
+            try {
+                await MySQLPlugin.init({});
+            }
+            catch (err) {
+                expect(err).to.be.an.error('No pool and no options to create one found, call `init` or `register` with options first');
+                threw = true;
+            }
+
+            expect(threw).to.be.true();
         });
 
         it('Errors on registering with no host options', async () => {
@@ -257,11 +261,12 @@ describe('Hapi MySQL', () => {
             const options = Hoek.clone(internals.dbOptions);
             delete options.host;
 
-            const MySQLPlugin = require('../');
+            const MySQLPlugin = require('..');
+
             let threw = false;
 
             try {
-                 await MySQLPlugin.init(options);
+                await MySQLPlugin.init(options);
             }
             catch (err) {
                 expect(err).to.be.an.error('Options must include host property');
@@ -276,7 +281,8 @@ describe('Hapi MySQL', () => {
             const options = Hoek.clone(internals.dbOptions);
             options.host = 'test';
 
-            const MySQLPlugin = require('../');
+            const MySQLPlugin = require('..');
+
             let threw = false;
 
             try {
@@ -300,14 +306,14 @@ describe('Hapi MySQL', () => {
             const server = Hapi.Server();
 
             await server.register({
-                plugin: require('../'),
+                plugin: require('..'),
                 options
             });
-            
+
             expect(server.getDb, 'getDb').to.exist();
 
-            await new Promise((resolve, reject) => {
-            
+            await new Promise((resolve) => {
+
                 return server.getDb((err, db) => {
 
                     expect(err).to.not.exist();
@@ -327,22 +333,23 @@ describe('Hapi MySQL', () => {
             const server = Hapi.Server();
 
             await server.register({
-                plugin: require('../'),
+                plugin: require('..'),
                 options
             });
-            
+
             expect(server.getConnection, 'getConnection').to.exist();
-            
+
             const connection = await server.getConnection();
 
             expect(connection, 'connection').to.exist();
 
-            return server.stop()
+            return server.stop();
         });
 
         it('Exposes `getConnection` on the module', async () => {
 
-            const MySQLPlugin = require('../');
+            const MySQLPlugin = require('..');
+
             await MySQLPlugin.init(internals.dbOptions);
             expect(MySQLPlugin.getConnection).to.be.a.function();
             expect(await MySQLPlugin.getConnection()).to.exist();
@@ -352,16 +359,17 @@ describe('Hapi MySQL', () => {
 
         it('Exposes `getConnection` on the module with a callback', async () => {
 
-            const MySQLPlugin = require('../');
+            const MySQLPlugin = require('..');
+
             await MySQLPlugin.init(internals.dbOptions);
             expect(MySQLPlugin.getConnection).to.be.a.function();
-            
+
             // By stopping we test both that getConnection takes a callback and that it returns errors properly
             await MySQLPlugin.stop();
-            return new Promise((resolve, reject) => {
-                
+            return new Promise((resolve) => {
+
                 return MySQLPlugin.getConnection((err) => {
-                    
+
                     expect(err).to.exist();
                     return resolve();
                 });
@@ -370,14 +378,15 @@ describe('Hapi MySQL', () => {
 
         it('Promisified commit/rollback/beginTransaction', async () => {
 
-            const MySQLPlugin = require('../');
+            const MySQLPlugin = require('..');
+
             await MySQLPlugin.init(internals.dbOptions);
             expect(MySQLPlugin.getConnection).to.be.a.function();
             const connection = await MySQLPlugin.getConnection();
-            
-            await connection.beginTransaction()
-            await connection.commit()
-            await connection.rollback()
+
+            await connection.beginTransaction();
+            await connection.commit();
+            await connection.rollback();
 
             return MySQLPlugin.stop();
         });
