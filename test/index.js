@@ -136,6 +136,40 @@ describe('Hapi MySQL', () => {
             return server.stop();
         });
 
+        it('Returns a promisified connection on server.getConnection', async () => {
+
+            const options = Hoek.clone(internals.dbOptions);
+
+            const server = Hapi.Server();
+
+            await server.register({
+                plugin: require('..'),
+                options
+            });
+
+            server.route([{
+                method: 'GET',
+                path: '/test',
+                config: {
+                    handler: async (request) => {
+
+                        const connection = await request.server.getConnection();
+                        return connection.query('SELECT * FROM test');
+                    }
+                }
+            }]);
+
+            const getResponse = await server.inject({
+                method: 'GET',
+                url: '/test'
+            });
+
+            expect(getResponse.statusCode, 'get status code').to.equal(200);
+            expect(getResponse.result.length, 'get result').to.be.above(0);
+
+            return server.stop();
+        });
+
         it('Quite fail when connection is deleted', async () => {
 
             const options = Hoek.clone(internals.dbOptions);
