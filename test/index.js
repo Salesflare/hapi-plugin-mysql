@@ -324,6 +324,8 @@ describe('Hapi MySQL', () => {
             }
             catch (err) {
                 expect(err).to.be.an.error();
+                expect(err.message).to.contain('ENOTFOUND');
+
                 threw = true;
             }
 
