@@ -1,0 +1,37 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: eslint
+    versions:
+    - 7.18.0
+    - 7.19.0
+    - 7.20.0
+    - 7.21.0
+    - 7.22.0
+    - 7.23.0
+    - 7.24.0
+  - dependency-name: "@hapi/hapi"
+    versions:
+    - 20.1.0
+    - 20.1.1
+  - dependency-name: "@hapi/lab"
+    versions:
+    - 24.1.0
+    - 24.1.1
+  - dependency-name: eslint-config-salesflare
+    versions:
+    - 4.5.0
+  - dependency-name: "@hapi/hoek"
+    versions:
+    - 9.1.1
+  - dependency-name: lodash
+    versions:
+    - 4.17.20
+  - dependency-name: "@hapi/code"
+    versions:
+    - 8.0.2
