@@ -27,5 +27,5 @@ jobs:
         run: |
           sudo systemctl start mysql.service
           mysql -e 'CREATE DATABASE test' -u root -p root
-          mysql -e 'USE `test`; CREATE TABLE IF NOT EXISTS `test` (`id` int(11) NOT NULL AUTO_INCREMENT,  primary key (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;'
+          mysql -e 'USE `test`; CREATE TABLE IF NOT EXISTS `test` (`id` int(11) NOT NULL AUTO_INCREMENT,  primary key (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;' -u root -p root
       - run: npm test
