@@ -1,0 +1,31 @@
+name: Test CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12, 14, 16]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Set up MySQL
+        run: |
+          sudo systemctl start mysql.service
+          mysql -e 'CREATE DATABASE test' -u root -p root
+          mysql -e 'USE `test`; CREATE TABLE IF NOT EXISTS `test` (`id` int(11) NOT NULL AUTO_INCREMENT,  primary key (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;'
+      - run: npm test
