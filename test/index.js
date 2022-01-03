@@ -250,6 +250,31 @@ describe('Hapi MySQL', () => {
             return server.stop();
         });
 
+        it('Registers using `socketPath`', async () => {
+
+            const options = Hoek.clone(internals.dbOptions);
+            delete options.host;
+            options.socketPath = '/test.db';
+
+            const MySQLPlugin = require('..');
+
+            let threw = false;
+
+            try {
+                await MySQLPlugin.init(options);
+            }
+            catch (err) {
+                // We expect it to throw ENOENT as we don't setup a socket path for testing.
+                // The test will fail if we would block init just because there is no host.
+                expect(err).to.be.an.error();
+                expect(err.message).to.include('ENOENT');
+
+                threw = true;
+            }
+
+            expect(threw).to.be.true();
+        });
+
         it('Errors on registering twice', async () => {
 
             const options = Hoek.clone(internals.dbOptions);
@@ -290,10 +315,11 @@ describe('Hapi MySQL', () => {
             expect(threw).to.be.true();
         });
 
-        it('Errors on registering with no host options', async () => {
+        it('Errors on registering with no host or socketPath options', async () => {
 
             const options = Hoek.clone(internals.dbOptions);
             delete options.host;
+            delete options.socketPath;
 
             const MySQLPlugin = require('..');
 
@@ -303,7 +329,8 @@ describe('Hapi MySQL', () => {
                 await MySQLPlugin.init(options);
             }
             catch (err) {
-                expect(err).to.be.an.error('Options must include host property');
+                expect(err).to.be.an.error();
+                expect(err).to.be.an.error('Options must include `host` or `socketPath` property');
                 threw = true;
             }
 
