@@ -15,7 +15,7 @@ const internals = {
     dbOptions: {
         host: 'localhost',
         user: 'root',
-        password: '',
+        password: 'root',
         database: 'test'
     }
 };
