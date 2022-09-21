@@ -453,5 +453,25 @@ describe('Hapi MySQL', () => {
 
             return MySQLPlugin.stop();
         });
+
+        it('Promisified `.query` usage with callbacks', async () => {
+
+            const MySQLPlugin = require('..');
+
+            await MySQLPlugin.init(internals.dbOptions);
+
+            const connection = await MySQLPlugin.getConnection();
+
+            return new Promise((resolve) => {
+
+                return connection.query('INSERT INTO test SET id = null', (err, results) => {
+
+                    expect(err, 'error').to.not.exist();
+                    expect(results.insertId, 'insert Id').to.exist();
+
+                    return resolve();
+                });
+            });
+        });
     });
 });

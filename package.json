@@ -6,7 +6,7 @@
   "private": false,
   "scripts": {
     "lint": "eslint --fix .",
-    "test": "lab -a @hapi/code -vL --lint-fix -t 96"
+    "test": "lab -m 5000 -a @hapi/code -vL --lint-fix -t 95"
   },
   "repository": {
     "type": "git",
