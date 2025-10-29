@@ -764,7 +764,7 @@ describe('Hapi MySQL', () => {
             });
 
             // Get a connection and hold it longer than leakThreshold
-            const connection = await server.getConnection();
+            const connection = await server.getConnection({ info: 'test' });
 
             // Wait longer than leakThreshold (10ms) but less than cleanupThreshold (20ms)
             await new Promise((resolve) => setTimeout(resolve, 15));
@@ -786,6 +786,27 @@ describe('Hapi MySQL', () => {
             await server.stop();
 
             // Verify cleanup happened (activeConnections should be empty or reduced)
+        });
+
+        it('It has info available on the connection if it was passed to the getConnection function', async () => {
+
+            const options = Hoek.clone(internals.dbOptions);
+            options.poolDiagnostics = true;
+            options.leakThreshold = 1; // 1ms - very low for testing (covers line 253)
+            options.leakCheckInterval = 2; // Check every 2ms
+            options.cleanupThreshold = 1; // Cleanup after 1ms (covers line 257)
+
+            const server = Hapi.Server();
+
+            await server.register({
+                plugin: require('..'),
+                options
+            });
+
+            const connection = await server.getConnection({ info: 'test' });
+            expect(connection.poolStats.info).to.equal('test');
+            connection.release();
+            await server.stop();
         });
 
         it('Cleans up old connection entries after cleanupThreshold', async () => {
