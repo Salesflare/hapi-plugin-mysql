@@ -1051,4 +1051,149 @@ describe('Hapi MySQL', () => {
             }
         });
     });
+
+    describe('Acquire wait timeout', () => {
+
+        // A pool of 1 with that 1 connection held makes every further acquire wait in the pool queue
+        internals.exhaustedPoolOptions = (acquireWaitTimeout, extra = {}) => {
+
+            return Object.assign(Hoek.clone(internals.dbOptions), { connectionLimit: 1, acquireWaitTimeout }, extra);
+        };
+
+        it('Rejects an invalid `acquireWaitTimeout`', async () => {
+
+            const MySQLPlugin = require('..');
+
+            await Promise.all([-1, 1.5, '100', null, true].map((value) => {
+
+                const options = Hoek.clone(internals.dbOptions);
+                options.acquireWaitTimeout = value;
+
+                return expect(MySQLPlugin.init(options)).to.reject(Error, 'Option `acquireWaitTimeout` must be a non-negative integer (milliseconds)');
+            }));
+        });
+
+        it('Waits without limit when `acquireWaitTimeout` is 0', async () => {
+
+            const MySQLPlugin = require('..');
+
+            await MySQLPlugin.init(internals.exhaustedPoolOptions(0));
+
+            const held = await MySQLPlugin.getConnection();
+
+            let resolved = false;
+            const waiting = MySQLPlugin.getConnection().then((connection) => {
+
+                resolved = true;
+                connection.release();
+            });
+
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            expect(resolved, 'resolved while pool exhausted').to.be.false();
+
+            held.release();
+            await waiting;
+            expect(resolved).to.be.true();
+
+            return MySQLPlugin.stop();
+        });
+
+        it('Rejects when no connection is handed out within `acquireWaitTimeout`', async () => {
+
+            const MySQLPlugin = require('..');
+
+            await MySQLPlugin.init(internals.exhaustedPoolOptions(50));
+
+            const held = await MySQLPlugin.getConnection();
+
+            const start = Date.now();
+            const err = await expect(MySQLPlugin.getConnection()).to.reject(Error, 'Timed out after 50ms waiting for a mysql connection from the pool');
+            expect(err.code).to.equal('POOL_ACQUIRETIMEOUT');
+            expect(Date.now() - start).to.be.below(1000);
+
+            held.release();
+
+            return MySQLPlugin.stop();
+        });
+
+        it('Releases a connection that the pool hands out after the acquire already timed out', async () => {
+
+            const MySQLPlugin = require('..');
+
+            await MySQLPlugin.init(internals.exhaustedPoolOptions(50));
+
+            const held = await MySQLPlugin.getConnection();
+
+            await expect(MySQLPlugin.getConnection()).to.reject(Error);
+
+            // The timed out callback is still first in the pool queue, so releasing hands the connection to it.
+            // If it were not released again, this pool of 1 would stay exhausted and the next acquire would time out too.
+            held.release();
+
+            const connection = await MySQLPlugin.getConnection();
+            expect(connection).to.exist();
+            connection.release();
+
+            return MySQLPlugin.stop();
+        });
+
+        it('Ignores a late pool error after the acquire already timed out', async () => {
+
+            const MySQLPlugin = require('..');
+
+            await MySQLPlugin.init(internals.exhaustedPoolOptions(50));
+
+            const held = await MySQLPlugin.getConnection();
+
+            await expect(MySQLPlugin.getConnection()).to.reject(Error);
+
+            // Ending the pool fails every queued callback with POOL_CLOSED, which must not blow up for the abandoned acquire
+            const stopped = MySQLPlugin.stop();
+            held.release();
+
+            return stopped;
+        });
+
+        it('Logs with pool stats and fails the request when a request times out acquiring', async () => {
+
+            const server = Hapi.Server();
+
+            await server.register({
+                plugin: require('..'),
+                options: internals.exhaustedPoolOptions(50, { poolDiagnostics: true })
+            });
+
+            server.route([{
+                method: 'GET',
+                path: '/test',
+                config: {
+                    handler: () => 'ok'
+                }
+            }]);
+
+            const logs = [];
+            server.events.on('log', (event, tags) => {
+
+                if (tags['hapi-plugin-mysql'] && tags.error) {
+                    logs.push(event.data);
+                }
+            });
+
+            const held = await server.getConnection();
+
+            const response = await server.inject({
+                method: 'GET',
+                url: '/test'
+            });
+
+            expect(response.statusCode).to.equal(500);
+            expect(logs).to.have.length(1);
+            expect(logs[0]).to.startWith('Timed out after 50ms waiting for a mysql connection from the pool, totalConnections: 1, freeConnections: 0');
+            expect(logs[0]).to.endWith(', info: get:/test');
+
+            held.release();
+
+            return server.stop();
+        });
+    });
 });
