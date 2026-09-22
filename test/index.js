@@ -1,5 +1,7 @@
 'use strict';
 
+const Net = require('net');
+
 const Lab = require('@hapi/lab'); // eslint-disable-line node/no-unpublished-require
 const Code = require('@hapi/code'); // eslint-disable-line node/no-unpublished-require
 const Hapi = require('@hapi/hapi');
@@ -1152,6 +1154,73 @@ describe('Hapi MySQL', () => {
             held.release();
 
             return stopped;
+        });
+
+        it('Closes the pool when the initial acquire times out and the connection arrives late', async () => {
+
+            // A proxy that delays the connect to the real database makes the initial acquire outlive `acquireWaitTimeout`
+            // and still complete afterwards, which is exactly the late callback `init` has to cope with
+            const sockets = new Set();
+            const proxy = Net.createServer((client) => {
+
+                sockets.add(client);
+                client.on('error', Hoek.ignore);
+
+                setTimeout(() => {
+
+                    const upstream = Net.connect(internals.dbOptions.port || 3306, internals.dbOptions.host);
+                    sockets.add(upstream);
+                    upstream.on('error', Hoek.ignore);
+                    client.pipe(upstream).pipe(client);
+                }, 200);
+            });
+            await new Promise((resolve) => proxy.listen(0, '127.0.0.1', resolve));
+
+            // Spy on the pool the plugin creates so we can check it gets closed and does not keep the late connection
+            const MySQL = require('mysql');
+
+            const originalCreatePool = MySQL.createPool;
+            let pool;
+            let endCalls = 0;
+            MySQL.createPool = (options) => {
+
+                pool = originalCreatePool(options);
+                const originalEnd = pool.end.bind(pool);
+                pool.end = (cb) => {
+
+                    ++endCalls;
+                    return originalEnd(cb);
+                };
+
+                return pool;
+            };
+
+            const MySQLPlugin = require('..');
+
+            try {
+                const options = Hoek.clone(internals.dbOptions);
+                options.host = '127.0.0.1';
+                options.port = proxy.address().port;
+                options.acquireWaitTimeout = 50;
+
+                const err = await expect(MySQLPlugin.init(options)).to.reject(Error);
+                expect(err.code).to.equal('POOL_ACQUIRETIMEOUT');
+                expect(endCalls, 'pool.end() calls').to.equal(1);
+                await expect(MySQLPlugin.getConnection()).to.reject(Error, 'No mysql pool found');
+
+                // Let the delayed connect complete so the late callback fires, then the discarded pool must hold nothing
+                await new Promise((resolve) => setTimeout(resolve, 600));
+                expect(pool._allConnections.length, 'connections left in discarded pool').to.equal(0); // eslint-disable-line no-underscore-dangle
+
+                // A fresh init must work afterwards
+                await MySQLPlugin.init(internals.dbOptions);
+                await MySQLPlugin.stop();
+            }
+            finally {
+                MySQL.createPool = originalCreatePool;
+                sockets.forEach((socket) => socket.destroy());
+                await new Promise((resolve) => proxy.close(resolve));
+            }
         });
 
         it('Logs with pool stats and fails the request when a request times out acquiring', async () => {
